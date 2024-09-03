@@ -36,6 +36,31 @@ services:
       - source_postgres
       - destination_postgres
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.8.2
+    command: [
+      "run", 
+      "--profiles-dir",
+      "/root",
+      "--project-dir",
+      "/dbt",
+    ]
+    networks:
+      - elt_network
+    volumes:
+      - ./custom_postgres:/dbt
+      - C:/Users/baldi/.dbt:/root
+    depends_on:
+      source_postgres:
+        condition: service_started
+      destination_postgres:
+        condition: service_started
+      elt_script:
+        condition: service_completed_successfully
+    environment:
+      #- DBT_PROFILE=default
+      - DBT_TARGET=dev
+  
 networks:
   elt_network:
     driver: bridge
